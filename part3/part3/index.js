@@ -34,7 +34,7 @@ let notes = [
 ]
 
 app.get('/', (request, response) => {
-  response.send('<h1>Hello!</h1>')
+  response.send('<h1>Hello World!</h1>')
 })
 
 app.get('/api/notes', (request, response) => {
@@ -95,6 +95,6 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3005
 app.listen(PORT)
 console.log(`Server running on port ${PORT}`)
