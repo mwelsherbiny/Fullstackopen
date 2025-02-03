@@ -8,7 +8,7 @@
     {
       "id": "2",
       "content": "Browser can execute only JavaScript",
-      "important": false
+      "important": true
     },
     {
       "id": "3",
@@ -16,59 +16,9 @@
       "important": true
     },
     {
-      "id": "4",
-      "content": "sad",
-      "important": false
-    },
-    {
-      "id": "371b",
-      "content": "bad",
-      "important": true
-    },
-    {
-      "id": "5bc4",
-      "content": "asd",
-      "important": true
-    },
-    {
-      "id": "e586",
-      "content": "dfsa",
-      "important": true
-    },
-    {
-      "id": "7cd6",
-      "content": "ads",
-      "important": false
-    },
-    {
-      "id": "0d04",
-      "content": "fs",
-      "important": true
-    },
-    {
-      "id": "95ec",
-      "content": "asd",
-      "important": true
-    },
-    {
-      "id": "656b",
-      "content": "dsa",
-      "important": false
-    },
-    {
-      "id": "beab",
-      "content": "fas",
-      "important": true
-    },
-    {
-      "id": "9bb9",
-      "content": "fsa",
-      "important": false
-    },
-    {
-      "id": "1f76",
-      "content": "fas",
-      "important": true
+      "content": "s",
+      "important": true,
+      "id": "e3ILoEF"
     }
   ]
 }
