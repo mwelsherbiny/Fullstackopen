@@ -1,4 +1,7 @@
 const Blog = require("../models/blog");
+const supertest = require("supertest");
+const app = require("../app");
+const api = supertest(app);
 
 const initialBlogs = [
   {
@@ -18,6 +21,25 @@ const initialBlogs = [
     author: "Jim Doe",
     url: "http://example.com/third-blog-post",
     likes: 30,
+  },
+];
+
+const user = {
+  username: "root",
+  name: "Superuser",
+  password: "1234",
+};
+
+const initialUsers = [
+  {
+    username: "root",
+    name: "Superuser",
+    passwordHash: "askdjmaopsdj1232kneo21qnep2e",
+  },
+  {
+    username: "user",
+    name: "Regular User",
+    passwordHash: "afsagmaopsdj1232kneo21qnep2e",
   },
 ];
 
@@ -41,8 +63,21 @@ const notInDbId = async () => {
   return id;
 };
 
+const getToken = async (user) => {
+  const response = await api
+    .post("/api/login")
+    .send({ username: user.username, password: user.password })
+    .expect(200)
+    .expect("Content-Type", /application\/json/);
+
+  return response.body.token;
+};
+
 module.exports = {
   initialBlogs,
   blogsInDb,
   notInDbId,
+  user,
+  initialUsers,
+  getToken,
 };

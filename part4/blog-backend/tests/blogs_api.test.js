@@ -2,6 +2,7 @@ const supertest = require("supertest");
 const app = require("../app");
 const helper = require("./test_helper");
 const Blog = require("../models/blog");
+const User = require("../models/user");
 const { test, after, beforeEach, describe } = require("node:test");
 const assert = require("node:assert");
 const { default: mongoose } = require("mongoose");
@@ -10,8 +11,15 @@ const api = supertest(app);
 
 describe("when there is initially some blogs saved", () => {
   beforeEach(async () => {
+    await User.deleteMany({});
+    let user = helper.user;
+    const addedUser = await api.post("/api/users").send(user);
+
     await Blog.deleteMany({});
-    const blogObjects = helper.initialBlogs.map((blog) => new Blog(blog));
+    const blogObjects = helper.initialBlogs.map((blog) => {
+      blog.user = addedUser.body.id;
+      return new Blog(blog);
+    });
     const promiseArray = blogObjects.map((blog) => blog.save());
     await Promise.all(promiseArray);
   });
@@ -42,17 +50,17 @@ describe("when there is initially some blogs saved", () => {
         likes: 60,
       };
 
-      const result = await api
+      const token = await helper.getToken(helper.user);
+
+      await api
         .post("/api/blogs")
+        .set("Authorization", `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", /application\/json/);
 
-      delete result.body.id;
-
       const blogsAtEnd = await helper.blogsInDb();
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1);
-      assert.deepStrictEqual(result.body, newBlog);
     });
 
     test("like property defaults to 0", async () => {
@@ -62,7 +70,13 @@ describe("when there is initially some blogs saved", () => {
         url: "http://example.com/new-blog-post",
       };
 
-      const result = await api.post("/api/blogs").send(newBlog).expect(201);
+      const token = await helper.getToken(helper.user);
+
+      const result = await api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${token}`)
+        .send(newBlog)
+        .expect(201);
 
       assert.strictEqual(result.body.likes, 0);
     });
@@ -80,8 +94,29 @@ describe("when there is initially some blogs saved", () => {
         likes: 60,
       };
 
-      await api.post("/api/blogs").send(missingTitleBlog).expect(400);
-      await api.post("/api/blogs").send(missingUrlBlog).expect(400);
+      const token = await helper.getToken(helper.user);
+
+      await api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${token}`)
+        .send(missingTitleBlog)
+        .expect(400);
+      await api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${token}`)
+        .send(missingUrlBlog)
+        .expect(400);
+    });
+
+    test("reject addition if token is missing", async () => {
+      const newBlog = {
+        title: "new Blog Post",
+        author: "Jackie Doe",
+        url: "http://example.com/new-blog-post",
+        likes: 60,
+      };
+
+      await api.post("/api/blogs").send(newBlog).expect(401);
     });
   });
 
@@ -90,7 +125,12 @@ describe("when there is initially some blogs saved", () => {
       const blogsAtStart = await helper.blogsInDb();
       const blogToDelete = blogsAtStart[0];
 
-      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+      const token = await helper.getToken(helper.user);
+
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(204);
 
       const blogsAtEnd = await helper.blogsInDb();
       assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1);
@@ -102,13 +142,23 @@ describe("when there is initially some blogs saved", () => {
     test("returns status code 204 if id is not found", async () => {
       const invalidId = await helper.notInDbId();
 
-      await api.delete(`/api/blogs/${invalidId}`).expect(204);
+      const token = await helper.getToken(helper.user);
+
+      await api
+        .delete(`/api/blogs/${invalidId}`)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(204);
     });
 
     test("returns status code 400 if id is invalid", async () => {
       const invalidId = "1234567890";
 
-      await api.delete(`/api/blogs/${invalidId}`).expect(400);
+      const token = await helper.getToken(helper.user);
+
+      await api
+        .delete(`/api/blogs/${invalidId}`)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(400);
     });
   });
 
